@@ -1,0 +1,8 @@
+watchdog
+pandas
+twilio
+pyyaml
+Flask
+transformers
+torch
+requests
