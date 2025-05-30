@@ -11,6 +11,9 @@ An automated outbound calling system built with Python, Twilio, and Flask. This 
 - **Live Agent Transfer**: Seamless transfer to live agents when needed
 - **Call Pipeline**: Post-call processing and analysis
 - **Production-Ready**: Built with Flask for reliability and ease of deployment
+- **Docker Support**: Containerized deployment with Docker and Docker Compose
+- **Robust Error Handling**: Retry mechanisms and comprehensive logging
+- **Secure Configuration**: Environment-based configuration management
 
 ## Prerequisites
 
@@ -18,12 +21,15 @@ An automated outbound calling system built with Python, Twilio, and Flask. This 
 - Twilio Account with Voice capabilities
 - A verified phone number for testing (if using trial account)
 - A Twilio phone number for outbound calls
+- Docker and Docker Compose (for containerized deployment)
 
 ## Installation
 
+### Local Development
+
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/outbound_dialer_bot.git
+git clone https://github.com/nk3843/outbound_dialer_bot.git
 cd outbound_dialer_bot
 ```
 
@@ -40,32 +46,46 @@ pip install -r requirements.txt
 
 4. Set up environment variables:
 ```bash
-export TWILIO_ACCOUNT_SID="your_account_sid"
-export TWILIO_AUTH_TOKEN="your_auth_token"
-export TWILIO_PHONE_NUMBER="your_twilio_number"
+cp .env.example .env
+# Edit .env with your Twilio credentials and other settings
+```
+
+### Docker Deployment
+
+1. Build and run using Docker Compose:
+```bash
+docker-compose up --build
+```
+
+Or run in detached mode:
+```bash
+docker-compose up -d
+```
+
+2. View logs:
+```bash
+docker-compose logs -f
+```
+
+3. Stop the application:
+```bash
+docker-compose down
 ```
 
 ## Configuration
 
-Create a `config.yaml` file in the root directory:
+The application can be configured through:
 
-```yaml
-twilio:
-  account_sid: "your_account_sid"
-  auth_token: "your_auth_token"
-  phone_number: "+1234567890"  # Your Twilio number
-  test_number: "+1987654321"   # For testing
+1. Environment variables (see `.env.example`)
+2. `config.yaml` file
+3. Docker Compose environment variables
 
-call_settings:
-  concurrency_limit: 10
-  delay_between_calls: 2  # in seconds
-
-knowledge_base:
-  source: "vector_db"  # or "static_file"
-
-transfer:
-  live_agent_number: "+1234567890"  # Your agent's number
-```
+Key configuration sections:
+- Twilio credentials
+- Call settings
+- IVR configuration
+- Logging settings
+- Security settings
 
 ## Project Structure
 
@@ -77,13 +97,18 @@ outbound_dialer_bot/
 │   ├── call_handler.py   # Twilio call handling logic
 │   ├── trigger_call.py   # Call triggering and batch processing
 │   ├── summarizer.py     # Call response summarization
-│   └── pipeline.py       # Post-call processing pipeline
+│   ├── pipeline.py       # Post-call processing pipeline
+│   ├── logger.py         # Centralized logging configuration
+│   └── utils.py          # Utility functions
 ├── leads/                # Directory for lead CSV files
 ├── logs/                 # Call logs and recordings
-├── tests/               # Test files
-├── config.yaml          # Configuration file
-├── requirements.txt     # Python dependencies
-└── README.md           # This file
+├── downloads/           # Downloaded call recordings
+├── tests/              # Test files
+├── config.yaml         # Configuration file
+├── requirements.txt    # Python dependencies
+├── Dockerfile         # Docker configuration
+├── docker-compose.yml # Docker Compose configuration
+└── README.md         # This file
 ```
 
 ## Lead File Format
@@ -98,6 +123,8 @@ Jane Smith,+15559876543
 
 ## Running the Application
 
+### Local Development
+
 1. Start the Flask server:
 ```bash
 python src/voice_api.py
@@ -106,6 +133,13 @@ python src/voice_api.py
 2. In a separate terminal, start the file watcher:
 ```bash
 python run.py
+```
+
+### Docker Deployment
+
+The application is automatically started when using Docker Compose:
+```bash
+docker-compose up
 ```
 
 The server will be available at:
@@ -158,11 +192,11 @@ docker run -p 5001:5001 \
 
 ### Cloud Deployment
 
-The application can be deployed to any cloud platform that supports Python applications:
+The application can be deployed to any cloud platform that supports Docker:
 
-- AWS Elastic Beanstalk
+- AWS ECS/EKS
 - Google Cloud Run
-- Heroku
+- Azure Container Instances
 - DigitalOcean App Platform
 
 ## Monitoring and Logging
@@ -170,6 +204,8 @@ The application can be deployed to any cloud platform that supports Python appli
 - Application logs are stored in the `logs` directory
 - Call recordings are available through Twilio's API
 - Response logs are stored in CSV format for analysis
+- Docker container health checks are configured
+- Rotating log files with size limits
 
 ## Security Considerations
 
@@ -177,11 +213,13 @@ The application can be deployed to any cloud platform that supports Python appli
    - Use HTTPS in production
    - Implement rate limiting
    - Validate all incoming requests
+   - Secure environment variables
 
 2. **Data Security**:
    - Encrypt sensitive data
    - Secure storage of credentials
    - Regular security audits
+   - Non-root Docker user
 
 3. **Compliance**:
    - TCPA compliance for outbound calls
